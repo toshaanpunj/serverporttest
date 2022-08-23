@@ -1,0 +1,17 @@
+version: '3.9'
+
+services:
+  postgres:
+    container_name: oyo-movers
+    image: postgres
+    environment:
+      - POSTGRES_USER=oyomovers
+      - POSTGRES_DB=oyomovers
+      - POSTGRES_PASSWORD=oyomovers
+    volumes:
+      - oyomovers-data:/var/lib/postressql/data 
+    ports:
+      - "5431:5432"
+  
+volumes:
+  oyomovers-data:
