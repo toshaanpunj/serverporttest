@@ -1,0 +1,278 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  name                      String?    @db.VarChar()
+  email                     String     @id @unique @db.VarChar()
+  password                  String?    @db.VarChar()
+  authToken                 String?    @db.VarChar()
+  googleAuthToken           String?    @db.VarChar()
+  user_type                 user_type  @default(USER)
+  phone                     String?    @unique
+  email_verification_code   Int?
+  email_verification_status Boolean    @default(false)
+  phone_verification_code   Int?
+  phone_verification_status Boolean    @default(false)
+  payment                   Payments[]
+  password_reset_code       Int?
+  createdAt                 DateTime   @default(now())
+  updatedAt                 DateTime   @default(now()) @updatedAt
+  orders                    Orders[]
+  mover                     Movers?
+  device_token              String?    @db.VarChar()
+  pfp_public_id             String?
+  pfp_public_url            String?
+  address                   String?
+  invoices                  Invoices[]
+
+  @@map("users")
+}
+
+model Orders {
+  id                         String             @id @default(uuid()) @db.Uuid
+  type                       order_type
+  userEmail                  String             @db.VarChar()
+  consumer                   Users              @relation(fields: [userEmail], references: [email])
+  moverEmail                 String?            @db.VarChar()
+  mover                      Movers?            @relation(fields: [moverEmail], references: [moverEmail])
+  final_payment_amount       String?
+  final_order_value          String?
+  payment_cleared            Boolean?           @default(false)
+  order_status               order_status       @default(PLACED)
+  payments                   Payments?
+  payment_status             payment_status?
+  final_payment_id           String?
+  pickup_address             String
+  destination_address        String
+  pickup_address_long        String
+  pickup_address_lat         String
+  destination_address_long   String
+  destination_address_lat    String
+  order_date                 DateTime
+  order_time                 order_time_slots
+  order_desc                 order_desc
+  packingAndMoving           Boolean?           @default(false)
+  dismantlingAndReassembling Boolean?           @default(false)
+  order_addintional_info     String?            @db.VarChar()
+  order_completed            Boolean            @default(false)
+  vehicleId                  String?
+  vehicle                    Vehicles?          @relation(fields: [vehicleId], references: [vehicle_number])
+  order_start_time           DateTime?
+  order_break_time_start     DateTime?
+  ordre_break_time_end       DateTime?
+  orderBreakAllowed          Int?               @default(30)
+  order_start_otp            String?
+  order_completion_time      DateTime?
+  order_completion_otp       String?
+  order_completion_timeSpan  String?
+  orderImages                OrderImages[]
+  rating                     String?
+  review                     String?            @db.VarChar()
+  createdAt                  DateTime           @default(now())
+  updatedAt                  DateTime           @default(now()) @updatedAt
+  tolls                      Json[]
+  junkRemovalJob             JunkRemovalJobs?
+  unsafeJobConsent           UnsafeJobConsents?
+  invoices                   Invoices?
+  orderExpense               OrderExpenses?
+
+  @@map("orders")
+}
+
+model Invoices {
+  id        String @id
+  userEmail String
+  user      Users  @relation(fields: [userEmail], references: [email])
+  orderId   String @unique @db.Uuid()
+  order     Orders @relation(fields: [orderId], references: [id])
+  url  String?
+  @@map("invoices")
+}
+
+model JunkRemovalJobs {
+  orderId            String  @id @db.Uuid
+  order              Orders  @relation(references: [id], fields: [orderId])
+  name               String
+  contactNumber      String
+  junkRemovedDetails Json?
+  url    String?
+  signatureId        String?
+  jobOtp             Int?
+
+  @@map("junkremovaljobs")
+}
+
+model UnsafeJobConsents {
+  orderId             String  @id @db.Uuid
+  order               Orders  @relation(references: [id], fields: [orderId])
+  name                String
+  contactNumber       String
+url      String?
+  signatureId         String?
+  unsafeJobConsentOtp Int?
+
+  @@map("unsafejobconsent")
+}
+
+model OrderImages {
+  id      String @id
+  url     String
+  orderId String @db.Uuid
+  order   Orders @relation(references: [id], fields: [orderId])
+
+  @@map("orderImages")
+}
+
+model OrderExpenses {
+  orderId         String @id @db.Uuid
+  order           Orders @relation(fields: [orderId], references: [id])
+  junkRemoval     Int?
+  movingCost      Int?
+  tollExpense     Int?
+  discountApplied Int?
+  otherCharges    Json?
+
+  @@map("orderexpenses")
+}
+
+model Vehicles {
+  vehicle_number String                   @id
+  vehicle_type   vehicle_type
+  orders         Orders[]
+  moverEmail     String
+  movers         Movers                   @relation(fields: [moverEmail], references: [moverEmail])
+  approved       vehicle_approval_status?
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @default(now()) @updatedAt
+
+  @@map("vehicles")
+}
+
+model Movers {
+  moverEmail                   String     @id @db.VarChar()
+  user                         Users      @relation(fields: [moverEmail], references: [email])
+  document_verification_status Boolean    @default(false)
+  mover_earnings               Float?
+  mover_cash                   Float?
+  last_cashout_date            DateTime?
+  orders                       Orders[]
+  companyEmail                 String?    @db.VarChar()
+  company                      Company?   @relation(references: [email], fields: [companyEmail])
+  vehicles                     Vehicles[]
+  profitShare                  Float?
+  createdAt                    DateTime   @default(now())
+  updatedAt                    DateTime   @default(now()) @updatedAt
+  lastOrderCompleted           DateTime?
+  licnese_public_id            String?
+  vehicle_reg_public_id        String?
+  insurance_public_id          String?
+
+  @@map("movers")
+}
+
+model Company {
+  email       String   @id @unique
+  phone       String?  @unique
+  address     String
+  person_name String
+  tax_number  String
+  password    String
+  movers      Movers[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  @@map("company")
+}
+
+model Payments {
+  id        String           @id @unique
+  mode      payment_mode
+  userEmail String
+  user      Users            @relation(fields: [userEmail], references: [email])
+  orderId   String           @unique @db.Uuid
+  order     Orders           @relation(fields: [orderId], references: [id])
+  couponId  String?          @db.Uuid
+  coupon    DiscountCoupons? @relation(fields: [couponId], references: [id])
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @default(now()) @updatedAt
+
+  @@map("payments")
+}
+
+model DiscountCoupons {
+  id        String     @id @db.Uuid
+  offer     Int
+  code      String     @db.VarChar()
+  usedIn    Payments[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @default(now()) @updatedAt
+
+  @@map("discountcoupons")
+}
+
+enum user_type {
+  ADMIN
+  USER
+  MOVER
+}
+
+enum order_type {
+  ONE_MAN_TRUCK
+  TWO_MEN_TRUCK
+  TWO_MEN_MEDIUM_TRUCK
+  ONE_MAN_LARGE_TRUCK
+}
+
+enum order_status {
+  PLACED
+  CANCELLED
+  QUEUED
+  IN_PROGRESS
+  COMPLETED
+  UNPAID
+  PAID
+}
+
+enum order_desc {
+  PIANO
+  BILLIARD_TABLE
+  OTHERS
+}
+
+enum vehicle_type {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+enum payment_status {
+  PENDING
+  PAID
+}
+
+enum payment_mode {
+  ONLINE
+  CASH
+  PENDING
+  ACCOUNT
+}
+
+enum vehicle_approval_status {
+  APPROVED
+  UNAPPROVED
+}
+
+enum order_time_slots {
+  FIRST  @map("6AM-10AM")
+  SECOND @map("10AM-1PM")
+  THIRD  @map("1PM-4PM")
+}

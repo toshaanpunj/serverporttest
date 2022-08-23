@@ -1,0 +1,37 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "alwaysStrict": true,
+        "charset": "UTF-8",
+        "declaration": true,
+        "esModuleInterop": true,
+        "moduleResolution": "node",
+        "module": "commonjs",
+        "newLine": "LF",
+        "preserveConstEnums": true,
+        "removeComments": true,
+        "target": "ESNext",
+        "incremental": true,
+        "baseUrl": "./",
+        "resolveJsonModule": true,
+        "paths": {
+            "@controllers/*": ["./src/controllers/*"],
+            "@constants/*": ["./src/constants/*"],
+            "@routes/*":["./src/routes/*"],
+            "@configs/*": ["./src/configs/*"],
+            "@utils/*": ["./src/utils/*"],
+            "@helpers/*": ["./src/helpers/*"],
+            "@lib/*": ["./src/lib/*"],
+            "@factory/*" :["./src/models/factory/*"],
+            "@api/*" :["./src/models/api/*"],
+            "@middleware/*": ["./src/middleware/*"],
+            "@services/*": ["./src/services/*"]
+        },
+        "typeRoots": ["./global.d.ts"]
+    },
+    "ts-node": {
+        "files": true
+    },
+    "include": ["src", "./*.ts", "global.d.ts", "prod-paths.js", "*.env" , "swagger_output.json"],
+    "exclude": ["node_modules", "dist"]
+}
